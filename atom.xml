@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://king-nana.github.io</id>
     <title>Gridea</title>
-    <updated>2021-11-03T06:14:43.526Z</updated>
+    <updated>2021-11-03T06:16:05.792Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://king-nana.github.io"/>
     <link rel="self" href="https://king-nana.github.io/atom.xml"/>
@@ -10,6 +10,111 @@
     <logo>https://king-nana.github.io/images/avatar.png</logo>
     <icon>https://king-nana.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[axios 请求多个baseurl 的情况]]></title>
+        <id>https://king-nana.github.io/post/axios-qing-qiu-duo-ge-baseurl-de-qing-kuang/</id>
+        <link href="https://king-nana.github.io/post/axios-qing-qiu-duo-ge-baseurl-de-qing-kuang/">
+        </link>
+        <updated>2021-11-03T06:14:54.000Z</updated>
+        <content type="html"><![CDATA[<h5 id="axios-请求多个baseurl-的情况">axios 请求多个baseurl 的情况</h5>
+<p>目前需要请求两种端口号:</p>
+<p>1、http://127.0.0.1:16666</p>
+<p>2、http://127.0.0.1:18888</p>
+<p>1）src文件夹底下新建一个request文件夹，新建一个reques.js 文件</p>
+<pre><code class="language-js">import axios from &quot;axios&quot;
+axios.defaults.headers = { 'content-type': 'application/json;charset=UTF-8' };
+
+function paramsToUrl(url, params) {
+    if (!params) return url
+    for (var key in params) {
+        if (params[key] &amp;&amp; params[key] != 'undefined') {
+            if (url.indexOf('?') != -1) {
+                url += '&amp;' + '' + key + '=' + params[key] || '' + ''
+            } else {
+                url += '?' + '' + key + '=' + params[key] || '' + ''
+            }
+        }
+    }
+    return url
+}
+
+function requireData(url, params, type, item) {
+    if (!url) return false
+    switch (item) {
+        case 'port16':
+            url = &quot;http://127.0.0.1:16666&quot; + url
+            break;
+        default:
+            url = &quot;http://127.0.0.1:18888&quot; + url
+            break;
+    }
+    
+    if (type === 'get') {
+        url = paramsToUrl(url, params)
+        return new Promise((resolve, reject) =&gt; {
+            axios.get(url, params).then(res =&gt; {
+                resolve(res.data)
+            }).catch(err =&gt; {
+                reject(err)
+            })
+        })
+    } else {
+        return new Promise((resolve, reject) =&gt; {
+            axios.post(url, params).then(res =&gt; {
+                resolve(res.data)
+            }).catch(err =&gt; {
+                reject(err)
+            })
+        })
+    }
+}
+
+export default {
+    install(Vue, options) {
+        //-&gt;接口1的请求数据方法
+        Vue.prototype.req16Service = function (url, params, type) {
+            return requireData.call(this, url, params, type, 'port16')
+        }
+        //-&gt;接口2的请求数据方法
+        Vue.prototype.req18Service = function (url, params, type) {
+            return requireData.call(this, url, params, type, 'port18')
+        }
+    }
+}
+
+</code></pre>
+<p>然后在main.js中全局挂载上面文件</p>
+<pre><code class="language-js">// 全局封装了axios多种类型接口的请求方法
+import common from '@/request/request'
+Vue.use(common)
+</code></pre>
+<p>vue界面使用案例</p>
+<pre><code class="language-js"> //get请求
+async getMenuList() {
+      const res = await this.req18Service(
+        '/CampusModelService/Rest/GetCampus',
+        {},
+        'get'
+      )
+      console.log(res)
+    },
+  //post 请求
+    async getTags() {
+      const res = await this.req16Service(
+        '/Rest/BatchGetSnapshot',
+        {
+          tagNames: [
+            '9566acd5-78fc-4aae-a03f-d2f8f5bc3a9a.DIAlarm',
+            '456925ce-394a-48f5-a233-56fad17175f2.DIAlarm',
+          ],
+        },
+        'post'
+      )
+      console.log(res)
+    },
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hello blog]]></title>
         <id>https://king-nana.github.io/post/hello-blog/</id>
